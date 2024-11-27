@@ -1,0 +1,141 @@
+To deploy and run the angular-java project on AWS EC2, follow these steps. This involves hosting the Java backend and Angular frontend on the EC2 instance.
+
+Prerequisites
+AWS Account: Log in to your AWS Management Console.
+Key Pair: Create a key pair in the AWS console to SSH into the EC2 instance.
+Instance Requirements:
+Use a t2.micro (free-tier) instance or higher, depending on your project size.
+Select an Amazon Linux 2 or Ubuntu AMI.
+Step 1: Launch an EC2 Instance
+Go to EC2 Dashboard:
+
+Launch an EC2 instance.
+Choose an Amazon Linux 2 or Ubuntu AMI.
+Select Instance Type:
+
+Use t2.micro (for free-tier users) or higher.
+Configure Security Groups:
+
+Add rules to allow the following ports:
+22 for SSH.
+8080 for the Java backend.
+4200 for the Angular frontend (or another frontend port).
+Example:
+Type	Protocol	Port Range	Source
+SSH	TCP	22	0.0.0.0/0
+Custom TCP	TCP	8080	0.0.0.0/0
+Custom TCP	TCP	4200	0.0.0.0/0
+Launch the instance and connect using SSH.
+
+Step 2: Setup the EC2 Instance
+SSH into the instance: Replace <your-key.pem> and <instance-public-ip>:
+
+ssh -i <your-key.pem> ec2-user@<instance-public-ip>
+Update the system:
+
+sudo yum update -y   # For Amazon Linux
+sudo apt update -y   # For Ubuntu
+Install required tools:
+
+sudo yum install git java-11-openjdk maven -y   # Amazon Linux
+sudo apt install git openjdk-11-jdk maven -y   # Ubuntu
+Install Node.js for Angular:
+
+curl -sL https://rpm.nodesource.com/setup_16.x | sudo bash -   # Amazon Linux
+curl -sL https://deb.nodesource.com/setup_16.x | sudo bash -   # Ubuntu
+sudo yum install nodejs -y                                     # Amazon Linux
+sudo apt install nodejs -y                                     # Ubuntu
+Verify installations:
+
+git --version
+java --version
+mvn --version
+node --version
+npm --version
+Step 3: Deploy the Java Backend
+Clone the repository:
+
+git clone https://github.com/Vaibhav8855/angular-java.git
+cd angular-java/backend
+Build the backend:
+
+mvn clean install
+Run the backend:
+
+mvn spring-boot:run
+Alternatively, create a JAR file and run:
+
+mvn package
+java -jar target/<your-backend-jar>.jar
+Verify the backend: Open http://<instance-public-ip>:8080 in your browser.
+
+Step 4: Deploy the Angular Frontend
+Navigate to the frontend directory:
+
+cd ../frontend
+Install dependencies:
+
+npm install
+Build the frontend:
+
+ng build --prod
+Serve the frontend: Install serve to serve the static files:
+
+npm install -g serve
+Start the server:
+
+serve -s dist/<your-angular-app>
+The frontend will typically run on http://<instance-public-ip>:5000.
+
+Step 5: Configure the Project
+Backend URL in Angular: Update the environment.ts file in src/environments to use the EC2 instance's backend URL:
+
+export const environment = {
+  production: true,
+  apiUrl: 'http://<instance-public-ip>:8080'
+};
+Restart the frontend with updated settings: Rebuild and serve the frontend again.
+
+Step 6: Verify the Application
+Access the backend: Open http://<instance-public-ip>:8080 to ensure the backend is working.
+Access the frontend: Open http://<instance-public-ip>:5000 to test the Angular app.
+Step 7: Optional Improvements
+Host the Angular Frontend on Nginx:
+
+Install Nginx:
+sudo yum install nginx -y   # Amazon Linux
+sudo apt install nginx -y   # Ubuntu
+Configure Nginx to serve the Angular app:
+sudo vi /etc/nginx/conf.d/angular.conf
+Add:
+server {
+    listen 80;
+    server_name _;
+    root /home/ec2-user/angular-java/frontend/dist/<your-angular-app>;
+    index index.html;
+
+    location / {
+        try_files $uri /index.html;
+    }
+}
+Restart Nginx:
+sudo systemctl restart nginx
+Run Java Backend in the Background: Use tools like tmux or screen to keep the backend running even after closing the SSH session:
+
+java -jar target/<your-backend-jar>.jar &
+Let me know if you need help with any specific step!
+
+
+
+
+
+
+
+Unable to share conversation
+Sharing conversations with user uploaded images is not yet supported
+
+
+
+
+
+ChatGPT can make mistakes. Check important info.
